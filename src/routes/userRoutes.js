@@ -17,7 +17,7 @@ userRouter.post('/register', userController.registerUser)
 userRouter.post('/login', userController.loginUser)
 
 // update possword
-userRouter.patch('/users/update',userController.updatePassword)
+userRouter.put('/users/changePassword', auth, userController.updatePassword)
 
 
 module.exports = userRouter

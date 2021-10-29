@@ -8,10 +8,9 @@ const registerUser = async (req, res) => {
         // creating users in db
         const user = await new Users(req.body)
         user.save()
-        res.send("user registered")
+        res.send({ message: "user registered" })
     } catch {
-        throw new Error('cannot register')
-        // res.status(400).send(error)
+        throw new Error({ message: 'cannot register' })
     }
 }
 
@@ -22,32 +21,40 @@ const loginUser = async (req, res) => {
         const token = jwt.sign({ _id: user._id.toString() }, 'secretKey')
         res.send({ token: token })
     } catch {
-        res.status(400).send()
+        res.status(400).send({ message: "cannot login " })
     }
 }
 
 
 // for profile
 const getProfile = async (req, res) => {
-    res.send(req.user)
+
+    try {
+        res.send(req.user)
+    } catch {
+        res.status(400).send({ message: "cannot get profile" })
+    }
+
 }
 
 // update password
 const updatePassword = async (req, res) => {
 
     try {
-        const user = await Users.findByCredentials(req.body.email, req.body.currentPassword)
-        const id = user.id
+        const id = req.user._id.toString()
 
-        if (req.body.newPassword === req.body.confirmPassword) {
-            // encrypting new password
-            const encryptedPassword = await bcrypt.hash(req.body.newPassword, 8)
-            const newUser = await Users.findByIdAndUpdate(id, { password: encryptedPassword })
+        if (req.body.newPassword === req.body.currentPassword) {
+            throw new Error()
         }
 
-        res.send('user updated')
-    } catch {
-        res.status(400).send()
+        if (req.body.newPassword === req.body.confirmPassword) {
+            const encryptedPassword = await bcrypt.hash(req.body.newPassword, 8)
+            await Users.findByIdAndUpdate(id, { password: encryptedPassword })
+            res.send({ message: 'user updated' })
+        }
+
+    } catch (e) {
+        res.status(400).send({ message: "updatation failed" })
     }
 }
 
